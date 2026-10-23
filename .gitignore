@@ -1,5 +1,6 @@
 node_modules/
 lib/
+dist/
 *.tgz
 .test-data/
 文献库/
