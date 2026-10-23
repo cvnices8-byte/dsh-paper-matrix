@@ -1,0 +1,21 @@
+{
+  "name": "dsh-paper-matrix",
+  "version": "0.1.0",
+  "description": "Bilingual, evidence-linked paper reading matrix for DeepSeek Harness",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {".": "./lib/index.js", "./client": "./lib/client.js"},
+  "files": ["lib", "src", "scripts", "vendor", "test", "examples", "README.md", "README.en.md", "THIRD_PARTY_NOTICES.md", "cordis.patch.yml", "LICENSE"],
+  "scripts": {"build": "node scripts/build.mjs", "test": "node --test test/*.test.mjs", "check": "npm run build && npm test", "prepack":"npm run build"},
+  "repository": {"type":"git","url":"https://github.com/cvnices8-byte/dsh-paper-matrix.git"},
+  "homepage":"https://github.com/cvnices8-byte/dsh-paper-matrix#readme",
+  "bugs":{"url":"https://github.com/cvnices8-byte/dsh-paper-matrix/issues"},
+  "engines": {"node": ">=22.13.0", "dsh": ">=0.2.1-rc.2 <0.3.0"},
+  "dsh": {
+    "bundle": {"patch": "./cordis.patch.yml"},
+    "client": {"platform": "web", "inject": ["@deepseek-ai/dsh-client-connection", "@deepseek-ai/dsh-client-ui-sidebar-right"], "immediately": true}
+  },
+  "dependencies": {"pdfjs-dist": "6.4.299"},
+  "devDependencies": {"esbuild": "0.28.2"},
+  "license": "MIT"
+}

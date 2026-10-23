@@ -1,0 +1,13 @@
+node_modules/
+lib/
+*.tgz
+.test-data/
+文献库/
+library/
+.harness-cache/
+*.pdf
+*.sqlite3*
+.env
+.env.*
+*.log
+.DS_Store

@@ -1,2 +1,113 @@
-# dsh-paper-matrix
-Bilingual, evidence-linked paper reading matrix for DeepSeek Harness. Local SQLite library, PDF page citations, and human edits.
+# Paper Matrix · DeepSeek Harness 文献拆解插件
+
+[English](README.en.md) · [下载安装包](https://github.com/cvnices8-byte/dsh-paper-matrix/releases) · MIT
+
+导入中英文论文，在一张表里初步拆解研究问题、数据、方法、实验和发现；每项拆解保留 PDF 页码与原文引用。面向经管与计算机交叉研究，也适合数据集和基准论文的横向初读。
+
+这是独立社区插件，非 DeepSeek 官方产品。**0.1.0 为本地单人试用版**，使用 Harness 原生插件和侧栏接口。
+
+## 环境要求
+
+- DeepSeek Harness **0.2.1-rc.2**；这是实际验证版本，其他预览版本需重新测试。
+- `dsh` 命令可用。macOS 桌面安装包自带 CLI：`/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh`。
+- Python **3.9+**，系统命令 `python3` 可用；也可配置绝对路径。
+- 从源码构建时需 Node **22.13+** 和 npm；发行包不需要自行编译前端。
+- 模型抽取需 Harness 内至少配置一个可用模型。导入、查看和编辑本地记录不调用模型。
+
+## 安装与启动
+
+先在 [Releases](https://github.com/cvnices8-byte/dsh-paper-matrix/releases) 下载 `dsh-paper-matrix-0.1.0.tgz`。推荐先建立新的 Harness 配置；**不要对已有配置使用 `--from-default-profile`，它会重建该配置**。
+
+```sh
+# 仅在这个配置尚不存在时初始化
+dsh --profile paper-matrix --from-default-profile web --dump-config
+
+# 替换成下载文件的实际路径
+dsh plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.0.tgz
+
+# 在自己的研究项目目录启动；默认在这里创建 文献库/
+cd /absolute/path/your-research-project
+dsh --profile paper-matrix --port 3147
+```
+
+浏览器打开 Harness 后：**右侧边栏 → 文献拆解 → 全屏（可选）**。使用启动终端输出的登录链接，保持终端运行，按 Ctrl+C 停止。首次进入可能显示 Harness 预览版说明。
+
+macOS 未将 `dsh` 加入 PATH 时，把上面的 `dsh` 替换为完整 CLI 路径，例如：
+
+```sh
+"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.0.tgz
+```
+
+如需固定文献库位置，在这个配置的 `cordis.patch.yml` 添加：
+
+```yaml
+- id: paper-matrix
+  config:
+    libraryDir: /absolute/path/your-research-project/文献库
+    # python: /absolute/path/python3
+```
+
+也可使用 `DSH_PAPER_MATRIX_LIBRARY_DIR` 环境变量；配置文件的显式设置优先。不要同时启动两个插件实例指向同一个缓存目录。
+
+## 使用
+
+1. 批量导入可搜索 PDF；相同文件按 SHA-256 去重，同名/同缩写不自动合并。
+2. 点标题进入详情，选择 Harness 已配置的模型，按需勾选“双语拆解”，开始分析。
+3. 核对原文页，按格修订。阅读状态、个人笔记、字段核验分别保存。
+4. 返回总表搜索、筛选、排序，导出 CSV 双语宽表或完整 JSON。
+
+分析会将论文全文发送给所选模型提供方，消耗其额度。插件复用 Harness 模型接口，不收集或另存 API Key。不同提供方的路由和凭据分别由 Harness 管理。
+
+## 首版功能
+
+- 11 个字段：文献类型、研究问题、数据与样本、方法与构建、底层证据设计、评测范围、实验或识别设计、评价指标、核心发现、局限与边界、代码与数据。
+- 中文默认概括，保留原题名、译题、专业术语、原语言引用；论文语言与数据语言分开。
+- 按 PDF 物理页码匹配引用；逐页提取文本查看和原 PDF 下载。
+- AI 草稿与人工层分开，重跑保留人工修订；版本冲突拒绝覆盖。
+- 阅读状态与核验状态独立。不会因分析完成而把文献标为已读。
+- SQLite 统一库，兼容随包提供的 `ai-literature-manager` 存储接口。
+
+## 本地数据与备份
+
+默认目录相对于启动时的当前目录：
+
+```text
+文献库/
+  library.sqlite3       # 文献、AI 草稿、人工层、状态、历史：事实来源
+  pdf-assets/           # 浏览器上传的 PDF：需要备份
+  .harness-cache/       # 可重建的解析文本、浏览副本、任务状态
+```
+
+既有外部 PDF 按原路径登记，不移动、不删除。清理缓存前停止 Harness；缓存可从登记的 PDF 重建。完整备份需在无写入任务时复制文献库，并另备份登记在外部路径的 PDF。
+
+CSV 是工作台预览；JSON 是统一库当前快照，保留证据、实验子记录、争议与人工层，但不含全部历史。不要用导出快照替代完整库备份。
+
+“采用机器原值”是一条用户采纳记录，保留人工层和历史；笔记只追加，首版不删除历史。模型的元数据提议保存在 `coverage.plugin_generated_metadata`，不通过 AI 字段暗改正式元数据。
+
+## 能力边界
+
+- 每篇最多 **25 MB / 300 页 / 180,000 字符**。超限拒绝，不静默截断。
+- 不含 OCR。扫描 PDF 需先转成可搜索 PDF。
+- 复杂表格、公式、双栏、脚注的文本层可能丢失布局；文本查看器不是原 PDF 排版渲染器。
+- “原文匹配”仅指指定页内的规范化文字匹配，忽略空白、兼容字符和字母间断词连字符。保留原 quote，**不等于语义支持或正确率**。
+- 模型可能误写数字、遗漏条件或误称源文冲突。初读草稿需要人工检查，不宜直接作为论文引用。
+- 经管变量、识别策略和独立实验子记录目前没有专用编辑器；统一库已有额外字段仍保留在完整 JSON 中。
+- 尚无多用户、云同步、Zotero 同步、后台监控或自动批量分析。
+
+## 开发
+
+```sh
+git clone https://github.com/cvnices8-byte/dsh-paper-matrix.git
+cd dsh-paper-matrix
+npm ci
+npm run check
+npm pack
+```
+
+源码可独立构建，不依赖作者的技能目录、论文文件、数据库或绝对路径。`vendor/literature.py` 随源码提供，仅依赖 Python 标准库。`lib/` 在构建时生成，发行包包含预编译宿主/客户端模块。
+
+主要入口：`src/host.mjs`、`src/client.jsx`、`src/core/canonical-store.mjs`、`src/core/pdf.mjs`、`src/core/analysis.mjs`。测试使用合成 PDF 与临时库，不上传用户论文、不调用收费模型。可运行 `node examples/create-sample.mjs` 生成一页原创合成 PDF，用于导入验证；它不是真实论文或模型效果演示。
+
+卸载：`dsh plugin --profile paper-matrix remove dsh-paper-matrix`；文献库独立保留。问题反馈请附 Harness/系统版本、脱敏错误和可公开的最小样例，不要上传凭据或未授权论文。
+
+参考官方 [插件打包](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/publish)、[客户端模块](https://deepseek-harness.github.io/deepseek-harness/en/reference/subsystems/client-modules)、[右侧栏接口](https://deepseek-harness.github.io/deepseek-harness/en/reference/subsystems/sidebar-right)。许可证及依赖说明见 [LICENSE](LICENSE) 与 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
