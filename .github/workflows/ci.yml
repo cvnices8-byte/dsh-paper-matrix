@@ -17,4 +17,12 @@ jobs:
       - run: python3 --version
       - run: npm ci
       - run: npm run check
+      - name: Ensure Git installs ship the current prebuilt modules
+        run: |
+          git ls-files --error-unmatch lib/index.js lib/client.js lib/literature.py
+          git diff --exit-code -- lib
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+      - run: npm run test:install
       - run: npm pack

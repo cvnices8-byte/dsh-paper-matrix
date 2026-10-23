@@ -33,7 +33,7 @@ export function apply(ctx, config = {}) {
     await ready;
     if (disposed) throw new Error('插件正在退出。');
     switch (method) {
-      case 'library': await store.sync(); return { papers: store.list(), dataDir, libraryDir, version: '0.1.0', canonical:true };
+      case 'library': await store.sync(); return { papers: store.list(), dataDir, libraryDir, version: '0.1.1', canonical:true };
       case 'models': {
         const providers = ctx.llm.listProviders();
         const lists = await Promise.allSettled(providers.map(async provider => ({ provider: provider.id, models: await ctx.llm.listModels(provider.id) })));

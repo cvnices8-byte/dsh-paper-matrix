@@ -4,7 +4,7 @@
 
 导入中英文论文，在一张表里初步拆解研究问题、数据、方法、实验和发现；每项拆解保留 PDF 页码与原文引用。面向经管与计算机交叉研究，也适合数据集和基准论文的横向初读。
 
-这是独立社区插件，非 DeepSeek 官方产品。**0.1.0 为本地单人试用版**，使用 Harness 原生插件和侧栏接口。
+这是独立社区插件，非 DeepSeek 官方产品。**0.1.1 为本地单人试用版**，使用 Harness 原生插件和侧栏接口。
 
 ## 环境要求
 
@@ -16,14 +16,36 @@
 
 ## 安装与启动
 
-先在 [Releases](https://github.com/cvnices8-byte/dsh-paper-matrix/releases) 下载 `dsh-paper-matrix-0.1.0.tgz`。推荐先建立新的 Harness 配置；**不要对已有配置使用 `--from-default-profile`，它会重建该配置**。
+### 桌面端
+
+打开 **插件 → 添加插件**，在“包名或地址”输入：
+
+```text
+https://github.com/cvnices8-byte/dsh-paper-matrix
+```
+
+点击“安装”，完成后在会话右侧栏打开“文献拆解”。仓库自 0.1.1 起包含预编译的宿主、客户端和 Python 桥接文件，安装时不需要运行构建脚本，也不需要修改 pnpm 的 `allowBuilds`。
+
+如果之前出现 `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`，请返回编辑并重新安装以上地址。0.1.0 源码仓库未包含 `lib/`，与当时单独提供的预编译 `.tgz` 包不同；该问题已在 0.1.1 修复。
+
+桌面端和独立网页端使用不同的 Harness 配置。桌面端安装目标是 `desktop`，不会自动读取 `paper-matrix` 网页配置中的插件与库位置；如需继续使用既有文献库，请在插件配置中指定同一个绝对 `libraryDir`，并先停止使用该库的其他宿主实例。
+
+### 独立网页端 / CLI
+
+可以直接从同一个 GitHub 地址安装：
+
+```sh
+dsh plugin --profile paper-matrix add https://github.com/cvnices8-byte/dsh-paper-matrix
+```
+
+也可在 [Releases](https://github.com/cvnices8-byte/dsh-paper-matrix/releases) 下载对应版本的预编译 `.tgz`。推荐先建立新的 Harness 配置；**不要对已有配置使用 `--from-default-profile`，它会重建该配置**。
 
 ```sh
 # 仅在这个配置尚不存在时初始化
 dsh --profile paper-matrix --from-default-profile web --dump-config
 
 # 替换成下载文件的实际路径
-dsh plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.0.tgz
+dsh plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.1.tgz
 
 # 在自己的研究项目目录启动；默认在这里创建 文献库/
 cd /absolute/path/your-research-project
@@ -35,7 +57,7 @@ dsh --profile paper-matrix --port 3147
 macOS 未将 `dsh` 加入 PATH 时，把上面的 `dsh` 替换为完整 CLI 路径，例如：
 
 ```sh
-"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.0.tgz
+"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.1.tgz
 ```
 
 如需固定文献库位置，在这个配置的 `cordis.patch.yml` 添加：
@@ -101,10 +123,11 @@ git clone https://github.com/cvnices8-byte/dsh-paper-matrix.git
 cd dsh-paper-matrix
 npm ci
 npm run check
+npm run test:install
 npm pack
 ```
 
-源码可独立构建，不依赖作者的技能目录、论文文件、数据库或绝对路径。`vendor/literature.py` 随源码提供，仅依赖 Python 标准库。`lib/` 在构建时生成，发行包包含预编译宿主/客户端模块。
+源码可独立构建，不依赖作者的技能目录、论文文件、数据库或绝对路径。`vendor/literature.py` 随源码提供，仅依赖 Python 标准库。`lib/` 的预编译产物同时提交到仓库并随发行包提供；改动源码后应重新构建并提交相应产物。CI 检查产物是否与源码一致，并在没有构建许可的干净环境中实际验证 Git 与 `.tgz` 安装。`PNPM_BIN` 可指定用于安装回归的 pnpm 可执行文件或 `.mjs` 入口。
 
 主要入口：`src/host.mjs`、`src/client.jsx`、`src/core/canonical-store.mjs`、`src/core/pdf.mjs`、`src/core/analysis.mjs`。测试使用合成 PDF 与临时库，不上传用户论文、不调用收费模型。可运行 `node examples/create-sample.mjs` 生成一页原创合成 PDF，用于导入验证；它不是真实论文或模型效果演示。
 

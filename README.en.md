@@ -4,18 +4,28 @@
 
 A native Harness sidebar plugin for a bilingual, evidence-linked paper reading matrix. Import PDFs, compare 11 research fields, inspect original-language quotes by PDF page, and keep AI drafts separate from your edits and reading status.
 
-Independent community software, not an official DeepSeek product. Version 0.1.0 is a local, single-user preview.
+Independent community software, not an official DeepSeek product. Version 0.1.1 is a local, single-user preview.
 
 ## Requirements and installation
 
 Tested Harness version: **0.2.1-rc.2**. Python **3.9+** must be available as `python3`. Source builds additionally require Node **22.13+** and npm. Model extraction requires an already configured Harness provider.
 
-Download `dsh-paper-matrix-0.1.0.tgz` from [Releases](https://github.com/cvnices8-byte/dsh-paper-matrix/releases).
+### Desktop
+
+Open **Plugins → Add plugin**, paste `https://github.com/cvnices8-byte/dsh-paper-matrix` into the package/address field and install. Then open **文献拆解** in a conversation's right sidebar. Since 0.1.1, the Git repository includes prebuilt host/client modules and the Python bridge, so installation requires no lifecycle build or pnpm `allowBuilds` changes.
+
+If an earlier Git install failed with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`, return to the editor and reinstall the same repository URL. The 0.1.0 Git source omitted `lib/`, unlike its separately built tarball; 0.1.1 fixes this packaging mismatch.
+
+The desktop app uses the `desktop` profile, independently of a standalone `paper-matrix` web profile. To share an existing library, configure its absolute `libraryDir` and stop any other host using it first.
+
+### Standalone web / CLI
+
+Use `dsh plugin --profile paper-matrix add https://github.com/cvnices8-byte/dsh-paper-matrix`, or download the versioned `.tgz` from [Releases](https://github.com/cvnices8-byte/dsh-paper-matrix/releases).
 
 ```sh
 # Only initialize a profile that does not already exist: this flag resets it.
 dsh --profile paper-matrix --from-default-profile web --dump-config
-dsh plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.0.tgz
+dsh plugin --profile paper-matrix add /absolute/path/dsh-paper-matrix-0.1.1.tgz
 cd /absolute/path/your-research-project
 dsh --profile paper-matrix --port 3147
 ```
